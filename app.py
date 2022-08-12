@@ -3,23 +3,31 @@ from dash import dcc, html
 from dash.dependencies import Input, Output, State
 
 import plotly.graph_objs as go
+import plotly.express as px
 import pandas as pd
 
 ########### Define your variables ######
 
 tabtitle = 'Old McDonald'
 sourceurl = 'https://plot.ly/python/choropleth-maps/'
-githublink = 'https://github.com/austinlasseter/agriculture-exports-map'
+githublink = 'https://github.com/samanthabretouswork/306-agriculture-exports-dropdown'
 # here's the list of possible columns to choose from.
-list_of_columns =['total exports', 'beef', 'pork', 'poultry',
-       'dairy', 'fruits fresh', 'fruits proc', 'total fruits', 'veggies fresh',
-       'veggies proc', 'total veggies', 'corn', 'wheat', 'cotton']
+# list_of_columns =['total exports', 'beef', 'pork', 'poultry',
+    #    'dairy', 'fruits fresh', 'fruits proc', 'total fruits', 'veggies fresh',
+    #    'veggies proc', 'total veggies', 'corn', 'wheat', 'cotton']
 
 
 ########## Set up the chart
 
 import pandas as pd
-df = pd.read_csv('assets/usa-2011-agriculture.csv')
+df = pd.read_csv('assets/social-media-influencers-youtube-june-2022.csv')
+list_of_columns = df['Category'].unique()
+# create column based on range
+df['Subscribers count Range'] = df['Subscribers count'].values
+df.sort_values(by=['Views avg.'], inplace=True)
+# df['Views avg.'].sort
+for ind in df.index:
+    df['Subscribers count Range'][ind] = round(float(df['Subscribers count'][ind][:-1]), -1)
 
 ########### Initiate the app
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
@@ -30,14 +38,14 @@ app.title=tabtitle
 ########### Set up the layout
 
 app.layout = html.Div(children=[
-    html.H1('2011 Agricultural Exports, by State'),
+    html.H1('Social Media Influencers on YouTube june-2022'),
     html.Div([
         html.Div([
                 html.H6('Select a variable for analysis:'),
                 dcc.Dropdown(
                     id='options-drop',
-                    options=[{'label': i, 'value': i} for i in list_of_columns],
-                    value='corn'
+                    options=list_of_columns,
+                    value=list_of_columns[0]
                 ),
         ], className='two columns'),
         html.Div([dcc.Graph(id='figure-1'),
@@ -56,22 +64,14 @@ app.layout = html.Div(children=[
 def make_figure(varname):
     mygraphtitle = f'Exports of {varname} in 2011'
     mycolorscale = 'ylorrd' # Note: The error message will list possible color scales.
-    mycolorbartitle = "Millions USD"
+    mycolorbartitle = "YouTubers subscribers by Category"
 
-    data=go.Choropleth(
-        locations=df['code'], # Spatial coordinates
-        locationmode = 'USA-states', # set of locations match entries in `locations`
-        z = df[varname].astype(float), # Data to be color-coded
-        colorscale = mycolorscale,
-        colorbar_title = mycolorbartitle,
-    )
-    fig = go.Figure(data)
-    fig.update_layout(
-        title_text = mygraphtitle,
-        geo_scope='usa',
-        width=1200,
-        height=800
-    )
+    # print(df.groupby(['Category','Name']).sum())
+    filterData = df[df['Category'] == varname]
+
+
+    fig = px.bar(filterData, y="Views avg.", x='Subscribers count Range', barmode="group")
+
     return fig
 
 
