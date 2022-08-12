@@ -24,10 +24,22 @@ df = pd.read_csv('assets/social-media-influencers-youtube-june-2022.csv')
 list_of_columns = df['Category'].unique()
 # create column based on range
 df['Subscribers count Range'] = df['Subscribers count'].values
-df.sort_values(by=['Views avg.'], inplace=True)
+df['Views avg. Range'] = df['Views avg.'].values
+
 # df['Views avg.'].sort
 for ind in df.index:
     df['Subscribers count Range'][ind] = round(float(df['Subscribers count'][ind][:-1]), -1)
+    string = df['Views avg. Range'][ind]
+    last_char = string[len(string)-1]
+    if last_char == "K":
+        df['Views avg. Range'][ind] = float(string[:-1]) * 1000
+    elif last_char == "M":
+        df['Views avg. Range'][ind] = float(string[:-1]) * 1000000
+    else:
+        df['Views avg. Range'][ind] = 0
+
+    
+df.sort_values(by=['Views avg. Range'], inplace=True)
 
 ########### Initiate the app
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
